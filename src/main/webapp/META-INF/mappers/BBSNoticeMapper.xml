@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.awoo.dao.BBSNoticeDAO">
+
+<!-- 공지사항 게시판 -->
+	<select id="selectBBSCountNotice" resultType="int">
+		select count(*)
+		from bbs_notice
+		where is_delete = 0
+		<choose>
+			<when test="searchType.equals('title') and keyword != ''">
+				and title like concat('%', #{keyword}, '%')
+			</when>
+			<when test="searchType.equals('content') and keyword != ''">
+				and content like concat('%', #{keyword}, '%')
+			</when>
+			<when
+				test="searchType.equals('title_content') and keyword != ''">
+				and title like concat('%', #{keyword}, '%') or content LIKE
+				concat('%', #{keyword}, '%')
+			</when>
+		</choose>
+	</select>
+
+	<select id="selectBBSListNotice" resultType="BBSVO">
+		select id, category, title, owner_id, owner, content, view_counts, file_counts,
+		date_format(create_date, '%Y-%m-%d') create_date
+		from bbs_notice
+		where
+		is_delete = 0
+		<choose>
+			<when test="searchType.equals('title') and keyword != ''">
+				and title like concat('%', #{keyword}, '%')
+			</when>
+			<when test="searchType.equals('content') and keyword != ''">
+				and content like concat('%', #{keyword}, '%')
+			</when>
+			<when
+				test="searchType.equals('title_content') and keyword != ''">
+				and title like concat('%', #{keyword}, '%') or content like
+				concat('%', #{keyword}, '%')
+			</when>
+		</choose>
+		order by category desc, id desc 
+		limit #{startRow}, #{cntPerPage}
+	</select>
+	
+	<select id="selectCategoryNotice" resultType="BBSVO">
+		select distinct category
+		from bbs_notice
+	</select>
+
+	<select id="selectBBSNotice" resultType="BBSVO">
+		select id, category, title,
+		owner_id, owner, content, view_counts, file_counts, 
+		date_format(create_date, '%Y-%m-%d') create_date
+		from bbs_notice
+		where is_delete = 0 and id = #{id}
+	</select>
+
+	<insert id="insertBBSNotice" useGeneratedKeys="true" keyProperty="id">
+		insert into bbs_notice(category, title, owner_id, owner, content, file_counts)
+		values(
+		<if test="category != null and category != ''">
+			#{category},
+		</if>
+		<if test="title != null and title != ''">
+			#{title},
+		</if>
+			#{ownerId}, #{owner},
+		<if test="content != null and content != ''">
+			#{content},
+		</if>
+		#{fileCounts}
+		)
+	</insert>
+
+	<update id="updateBBSNotice">
+		update bbs_notice 
+		<set>
+			<if test="category != null">, category = #{category}</if>
+			<if test="title != null">, title = #{title}</if>
+			<if test="content != null">, content = #{content}</if>
+			<if test="fileCounts != null">, file_counts = #{fileCounts}</if>
+		</set>
+		where id = #{id} and owner_id = #{ownerId}
+	</update>
+
+	<update id="deleteBBSNotice">
+		update bbs_notice set is_delete = 1
+		where id = #{id} and owner_id = #{ownerId}
+	</update>
+
+	<update id="updateViewCountNotice">
+		update bbs_notice set view_counts = view_counts + 1
+		where id = #{id}
+	</update>
+	
+	<select id="countFilesNotice" resultType="int">
+		select count(*)
+		from bbs_notice as b inner join bbs_notice_uploadfile as f
+		on b.id = #{id} and f.bbs_id = #{id}
+	</select>
+	
+	<update id="updateFileCountNotice">
+		update bbs_notice set file_counts = (select count(*) 
+		from bbs_notice as b inner join bbs_notice_uploadfile as f 
+		on b.id = #{id} and f.bbs_id = #{id}) 
+		where id = #{id}
+	</update>
+	
+	<!-- 파일 업로드 -->
+	<insert id="insertBBSFileNotice" parameterType="BBSFileVO">
+		insert into bbs_notice_uploadfile(bbs_id, servername, localname)
+		values(#{bbsId}, #{servername}, #{localname})
+	</insert>
+	
+	<select id="selectBBSFileNotice" parameterType="BBSFileVO" resultType="BBSFileVO">
+		select id, bbs_id, localname, servername
+		from bbs_notice_uploadfile
+		where bbs_id = #{bbsId}
+	</select>
+	
+	<delete id="deleteBBSFileNotice" parameterType="BBSFileVO">
+		delete from bbs_notice_uploadfile
+		<where>
+			<choose>
+				<when test="id != 0">
+					and id = #{id}
+				</when>
+				<when test="bbsId != 0">
+					and bbs_id = #{bbsId}
+				</when>
+			</choose>
+		</where>
+	</delete>
+
+	
+</mapper>

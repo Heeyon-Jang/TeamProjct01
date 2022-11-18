@@ -1,0 +1,153 @@
+	.pop1 {
+    height: 7%;
+    }
+    .pop1-1{
+    height: 90%;
+    }
+    .pop5 {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    width: 100%;
+    height: 45px;
+    }
+
+	#applypop .pop5 button {
+    width: 25%;
+    }
+	.pop-container{
+	width: 1000px;
+    height: 850px;
+    }
+    
+    #show,#hide{
+	border: 1px solid black;
+    width: 56%;
+    height: 40%;
+    border-radius: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+	}
+    #input1:checked ~ #show,
+	#input2:checked ~ #hide{
+	background-color: #272454;
+	color: white;
+	}
+	
+	.select-showHide{
+	width: 20%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    height: auto;
+    justify-content: space-between;
+}
+
+
+	.mail-select-container{
+	display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    width: 100%;
+    height: 100px;
+	}
+	.popFrom{
+	display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+    height: 100%;
+	}
+	.send-container-warp{
+    width: 75%;
+	display: flex;
+    flex-direction: inherit;
+	}
+	#send-container{
+	width: 100%;
+    overflow: auto;
+    height: 100%;
+    background-color: #f8f8f8;
+    padding: 0 20px;
+    box-sizing: border-box;
+	}
+	label{
+	display: inline-block;
+    width: 70px;
+    font-weight: bold;
+	}
+	#send-container input{
+	border: 1px solid #d1d1d1;
+    border-radius: 30px;
+    width: 80%;
+    height: 25px;
+	}
+	#send-container > div{
+	padding: 5px 0;
+	}
+	#addid, #delid{
+	font-size: 14px;
+    background-color: #272454;
+    border: 1px solid #c1c1c1;
+    height: 49.99%;
+    width: 35px;
+    /* font-weight: bold; */
+    color: white;
+    cursor: pointer;
+	}
+	.mail-input{
+	height: 26px;
+    border: 1px solid #d1d1d1;
+    border-radius: 3px;
+	}
+	.cke_contents{
+	height:230px;
+	}
+	.hidespan{
+	color:red;
+	}
+	
+	
+	.detail-container table td:nth-child(1) {
+    width: 20px;
+    }
+	.holiday-list tr th, .holiday-list tr td {
+	text-overflow: ellipsis;
+    overflow: hidden;
+	}    
+    .holiday-list tr th:nth-child(1), .holiday-list tr td:nth-child(1) {
+    width: 30px;
+	}
+	.holiday-list tr th:nth-child(3), .holiday-list tr td:nth-child(3) {
+     width: 265px;
+	}
+	.holiday-list tr th:nth-child(4), .holiday-list tr td:nth-child(4) {
+    width: 120px;
+	}
+	.holiday-list tr th:nth-child(5), .holiday-list tr td:nth-child(5) {
+    width: 150px;
+	}
+	.holiday-list tr th:nth-child(6), .holiday-list tr td:nth-child(6) {
+    width: 300px;
+	}
+	.div2{
+	    overflow: auto;
+	}
+	
+	.cke_reset_all tr td {
+    max-width: none;
+	}
+	
+	@media screen and (max-width: 1280px) {
+		.div2 .holiday-list tr th:nth-child(6), .div2 .holiday-list tr td:nth-child(6) {
+		display:none;
+		}
+	}
+	@media screen and (max-width: 1000px) {
+		.pop-container {
+	    width: 90%;
+	    height: 850px;
+	}
+}

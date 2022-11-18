@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.awoo.dao.EmployeeInfoDAO">
+	<!-- 신규 직원 등록 -->
+	<insert id="insertDataE">
+		insert into employee_info(
+		empno, edepartment,eposition,ehired_date,ehired_type,total_holiday,estatus,check_admin
+		)
+		values(
+		#{empno}, #{edepartment},#{eposition},#{ehiredDate},#{ehiredType},#{totalHoliday},#{estatus},#{checkAdmin}
+		)
+	</insert>
+	<!-- 사원번호 지정(설정) -->
+	<select id="selectEmpno" resultType="EmployeeInfoVO">
+		select empno from employee_info
+	</select>
+	<!-- 부서(직원 현황) -->
+	<select id="edepartment" resultType="InfoVO">
+		SELECT DISTINCT edepartment FROM employee_info;
+	</select>
+	<!-- 인사정보 수정 -->
+	<update id="updateE">
+		update employee_info
+		<set>
+			<if test="empno != null and empno != ''">
+			empno = #{empno},  
+			</if>
+			<if test="edepartment != null and edepartment != ''">
+			edepartment = #{edepartment},  
+			</if>
+			<if test="eposition != null and eposition != ''">
+			eposition = #{eposition},  
+			</if>
+			<if test="ehiredDate != null and ehiredDate != ''">
+			ehired_date = #{ehiredDate},  
+			</if>
+			<if test="ehiredType != null and ehiredType != ''">
+			ehired_type = #{ehiredType},  
+			</if>
+			<choose>
+				<when test="totalHoliday == 0">
+					total_holiday = 0,
+				</when>
+				<when test="totalHoliday != null and totalHoliday != '' and totalHoliday != 0">
+					total_holiday = #{totalHoliday},
+				</when>
+			</choose>
+			<if test="estatus != null and estatus != ''">
+			estatus = #{estatus},  
+			</if>
+			<if test="checkAdmin != null and checkAdmin != ''">
+			check_admin = #{checkAdmin}, 
+			</if>
+		</set>
+		where empno = #{empno}
+	</update>
+	<!-- 리스트(직원 현황) -->
+	<select id="selectInfo1" resultType="InfoVO">
+		select id, NAME,gender,birthday,password,email,tel_number,phone_number,address, 
+		personal_info.empno, edepartment,eposition, date_format(ehired_date,'%Y-%m-%d') ehired_date,
+		ehired_type,total_holiday,estatus,check_admin
+		 from personal_info JOIN employee_info ON personal_info.empno = employee_info.empno
+		 AND (employee_info.estatus = '재직' OR employee_info.estatus = '휴직')
+	</select>
+	
+	<!-- 연관검색 (이름,부서) -->
+	<select id="AssociatedSearch" resultType="InfoVO">
+		SELECT NAME,edepartment,e.empno as empno FROM personal_info p,employee_info e
+		WHERE e.empno = p.empno 
+		and NAME like CONCAT('%',#{name},'%');
+	</select>
+	
+	<!-- 휴가 -->
+	<!-- 사용한 휴가 계산 -->
+	<update id="updateUsedHoliday">
+		update employee_info SET
+		used_holiday = used_holiday + (SELECT count_date FROM holiday WHERE id = #{id})  
+		WHERE empno = #{empno};
+	</update>
+	<!-- 연차 사용 계산을 위한 리스트 -->
+	<select id="selectHolidayTotal" resultType="EmployeeInfoVO">
+		SELECT total_holiday,used_holiday,empno
+		FROM employee_info 
+		WHERE empno = #{empno}
+	</select>
+	<!-- empno : 부서 식별 -->
+	<select id="HEdepartment" resultType="EmployeeInfoVO">
+		SELECT edepartment, empno FROM employee_info;
+	</select>
+	
+	
+	<!-- 부서 및 직책 관리 -->
+	
+	<!--  부서 리스트 -->
+	<select id="department" resultType="PositionDepartmentVO">
+		select id, department from department;
+	</select>
+	<!-- 부서 사원수 -->
+	<select id="countDepartment" resultType="PositionDepartmentVO" >
+		SELECT d.department as department, COUNT(e.edepartment) as count
+		FROM department AS d LEFT JOIN employee_info AS e 
+		ON d.department = e.edepartment
+		AND (e.estatus = '재직' OR e.estatus = '휴직')
+		GROUP BY d.department;
+	</select> 
+	<!-- 부서 추가 -->
+	<insert id="insertDepartment">
+		INSERT INTO department(department) VALUES(#{department});
+	</insert>
+	<!-- 부서 수정 -->
+	<update id="updateDepartment">
+		UPDATE department SET department = #{department} where id = #{id};
+	</update>
+	<!-- 부서 수정 및 삭제 후 해당 직원 재배치 -->
+	<update id="updateDepartment2">
+		update employee_info set edepartment = #{department}
+		where edepartment = (SELECT department from department WHERE id = #{id});
+	</update>
+	<!-- 부서 삭제 -->
+	<delete id="deleteDepartment">
+		DELETE FROM department WHERE id = #{id}; 
+	</delete>
+	
+	
+	<!-- 직책 리스트 -->
+	<select id="position" resultType="PositionDepartmentVO">
+		select id, position from positionp;
+	</select>
+	<!-- 직책 사원수 -->
+	<select id="countPosition" resultType="PositionDepartmentVO" >
+		SELECT p.position, COUNT(e.eposition) as count
+		FROM positionp AS p LEFT JOIN employee_info AS e 
+		ON p.position = e.eposition
+		AND (e.estatus = '재직' OR e.estatus = '휴직')
+		GROUP BY p.position;
+	</select> 
+	<!-- 직책 추가 -->
+	<insert id="insertPosition">
+		INSERT INTO positionp(position) VALUES(#{position});
+	</insert>
+	<!-- 직책 수정 -->
+	<update id="updatePosition">
+		UPDATE positionp SET position = #{position} where id = #{id};
+	</update>
+	<!-- 직책 수정 및 삭제 후 해당 직원 재배치 -->
+	<update id="updatePosition2">
+		update employee_info set eposition = #{position}
+		where eposition = (SELECT position from positionp WHERE id = #{id});
+	</update>
+	<!-- 직책 삭제 -->
+	<delete id="deletePosition">
+		DELETE FROM positionp WHERE id = #{id};
+	</delete>
+		
+	<!-- test -->
+	<select id="selectEmpPro" resultType="EmployeeInfoVO">
+		select * from employee_info
+		where empno = #{empno}
+	</select>
+</mapper>

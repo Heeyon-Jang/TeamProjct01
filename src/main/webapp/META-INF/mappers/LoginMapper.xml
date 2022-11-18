@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.awoo.dao.LoginDAO">
+
+	<select id="selectUser" resultType="PersonalInfoVO">
+		select id, name, gender, birthday, password, email, tel_number, phone_number, address, empno 
+		from personal_info where empno = #{empno} and password = #{password}
+	</select>
+		
+	<!-- 초기 비밀번호 변경 -->
+	<update id="updatePassword">
+		update personal_info set password = #{newPW}
+		where password = #{nowPW} and empno = #{empno}
+	</update>
+	
+	<!-- 모든 정보 가져와서 검사 -->
+	<select id="getVerification" resultType="PersonalInfoVO">
+		select id, name, gender, birthday, email, tel_number, phone_number, address, empno, mail_auth, mail_key from personal_info
+	</select>
+	
+	<select id="getUserInfo" resultType="PersonalInfoVO">
+		select id, name, password, email, empno from personal_info where empno = #{empno}
+	</select>
+	
+	<!-- 메일 인증 -->
+	<update id="setMailAuth">
+		update personal_info set mail_auth = #{random}
+		where empno = #{empno}
+	</update>
+	
+	<select id="getMailAuth" resultType="int">
+		select count(mail_auth) from personal_info where empno = #{empno} and mail_auth = #{mailAuth}
+	</select>
+	
+	<!-- 관리자 확인 -->
+	<select id="checkAdmin" resultType="String">
+		select if (check_admin = 1, '관리자','일반') AS result FROM employee_info WHERE empno = #{empno};
+	</select>
+</mapper>
+

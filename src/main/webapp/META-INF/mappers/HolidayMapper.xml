@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.awoo.dao.HolidayDAO">
+	<select id="selectHoliday" resultType="HolidayVO">
+		select h.id as id, huser_name, DATE_FORMAT(hwrite_date, '%y.%m.%d') as hwrite_date, htype, date_format(hstart_date,'%y.%m.%d') as hstart_date, date_format(hend_date,'%y.%m.%d') as hend_date, hcontent, half_day,approval, count_date, h.empno as empno, e.total_holiday as total_holiday, e.used_holiday as used_holiday, date_format(approval_date,'%y.%m.%d') as approval_date 
+		FROM holiday h, employee_info e
+		<where>
+			h.empno = e.empno
+			and h.empno=#{empno}
+			<if test="hwriteDate == null">
+				and 1=1
+			</if>
+			<if test="hwriteDate != null">
+				and DATE_FORMAT(hwrite_date, '%Y') = #{hwriteDate}
+			</if>
+		</where>
+		order by DATE_FORMAT(hwrite_date, '%y.%m.%d %H:%i:%m') desc;
+	</select>
+	<insert id="insertHoliday">
+		insert into holiday(huser_name, htype, hstart_date, hend_date, hcontent, half_day, approval, approval_date, count_date ,empno)
+		VALUES (#{huserName}, #{htype},#{hstartDate},#{hendDate},#{hcontent},#{halfDay},#{approval}, null, #{countDate},#{empno});
+	</insert>
+	<select id="distinctYear" resultType="String">
+		select distinct(DATE_FORMAT(hwrite_date, '%Y')) 
+		from holiday
+		where empno=#{empno} 
+	</select>
+	
+	<select id="getDetailHoliday" resultType="HolidayVO">
+		select h.id as id, huser_name, DATE_FORMAT(hwrite_date, '%y.%m.%d') as hwrite_date, htype, date_format(hstart_date,'%y.%m.%d') as hstart_date, date_format(hend_date,'%y.%m.%d') as hend_date, hcontent, half_day,approval, count_date, h.empno as empno, e.total_holiday as total_holiday, date_format(approval_date,'%y.%m.%d') as approval_date, rejection_reason
+		FROM holiday h, employee_info e
+		where h.empno = e.empno and h.empno=#{empno} and h.id=${id}
+	</select>
+	<select id="getholidayCount" resultType="EmployeeInfoVO">
+		select total_holiday, used_holiday from employee_info where empno = #{empno}
+	</select>
+	
+	
+<!-- 	혜은  -->
+	<!-- 휴가 승인,반려 -->
+	<update id="updateApproval">
+		update holiday set approval = #{approval}, approval_date = NOW()
+		<if test="rejectionReason != null and rejectionReason != ''">
+			,rejection_reason = #{rejectionReason}  
+		</if>
+		where id = #{id};
+	</update>
+	<!-- 전체 리스트 + 상세 검색 -->
+	<select id="selectH" resultType="HolidayVO">
+		SELECT 
+		h.id as id, huser_name, DATE_FORMAT(hwrite_date, '%y.%m.%d') as hwrite_date, htype, 
+		date_format(hstart_date,'%y.%m.%d') as hstart_date, date_format(hend_date,'%y.%m.%d') as hend_date, 
+		hcontent, half_day,approval, count_date, h.empno as empno, e.total_holiday as total_holiday, 
+		date_format(approval_date,'%y.%m.%d') AS approval_date, rejection_reason
+		FROM holiday h, employee_info e
+		 <where>
+			  h.empno = e.empno
+			 <if test="edepartment != null and edepartment != ''">
+			 	AND edepartment = #{edepartment}
+			 </if>
+			 <if test="htype != null and htype != ''">
+			 	AND htype = #{htype}
+			 </if>
+			 <if test="hwriteDate != null and hwriteDate != ''">
+				AND DATE_FORMAT(hwrite_date, '%Y') = #{hwriteDate}
+			</if>
+		 </where>
+		 order by id desc;
+	</select>
+	<!-- 휴가 신청 연도(select - option) -->
+	<select id="holidayY" resultType="HolidayVO">
+		SELECT DATE_FORMAT(hwrite_date, '%Y') as hwrite_date
+		FROM holiday GROUP BY DATE_FORMAT(hwrite_date, '%Y');
+	</select>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+

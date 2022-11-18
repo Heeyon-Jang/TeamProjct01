@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.awoo.dao.MessageDAO">
+
+	<select id="getReceivedMessageList" resultType="MessageVO">
+		SELECT m.id as id, mowner_id, p.name as ownerName, mcontent, date_format(msend_date, '%Y-%m-%d') as msend_date, mreceiver_id, view 
+		FROM message m, personal_info p
+		<where>
+			m.mowner_id = p.empno
+			
+			<if test="month == null">
+				and 1=1
+			</if>
+			<if test="year == null">
+				and 1=1
+			</if>
+			<if test="name == null">
+				and 1=1
+			</if>
+			<if test="month != null">
+				and DATE_FORMAT(msend_date, '%m') = #{month}
+			</if>
+			<if test="year != null">
+				and DATE_FORMAT(msend_date, '%Y') = #{year}
+			</if>
+			<if test="name != null">
+				and p.name = #{name}
+			</if>
+			and mreceiver_id=#{mreceiverId}
+		</where>
+		ORDER BY m.id desc;
+	</select>
+	<select id="getSendMessageList" resultType="MessageVO">
+		SELECT m.id as id, mowner_id, mcontent, date_format(msend_date, '%Y-%m-%d') as msend_date, mreceiver_id, p.name as receiverName, view
+		FROM message m, personal_info p
+		
+		<where>
+			m.mreceiver_id = p.empno
+			
+			<if test="month == null">
+				and 1=1
+			</if>
+			<if test="year == null">
+				and 1=1
+			</if>
+			<if test="name == null">
+				and 1=1
+			</if>
+			<if test="month != null">
+				and DATE_FORMAT(msend_date, '%m') = #{month}
+			</if>
+			<if test="year != null">
+				and DATE_FORMAT(msend_date, '%Y') = #{year}
+			</if>
+			<if test="name != null">
+				and p.name = #{name}
+			</if>
+			AND m.mowner_id=#{mownerId}
+		</where>
+		
+		ORDER BY m.id desc;
+	</select>
+	<select id="getDistinctEmployees" resultType="PersonalInfoVO">
+		SELECT DISTINCT(NAME), empno FROM personal_info;
+	</select>
+	<select id="getRecieveDistinctYear" resultType="String">
+		select distinct(DATE_FORMAT(msend_date, '%Y')) 
+		from message
+		where mreceiver_id = #{mreceiverId} 
+		order by (DATE_FORMAT(msend_date, '%Y')) desc
+	</select>
+	<select id="getSendDistinctYear" resultType="String">
+		select distinct(DATE_FORMAT(msend_date, '%Y')) 
+		from message
+		where mowner_id = #{mownerId} 
+		order by (DATE_FORMAT(msend_date, '%Y')) desc
+	</select>
+	<select id="getRecieveDistinctSender" resultType="String">
+		SELECT distinct(p.name) 
+		FROM message m, personal_info p
+		WHERE m.mowner_id = p.empno 
+		and mreceiver_id=#{mreceiverId}
+		ORDER BY date_format(msend_date, '%Y-%m-%d %h:%i:%s')desc;
+	</select>
+	<select id="getRecieveDistinctReceiver" resultType="String">
+		SELECT distinct(p.name) 
+		FROM message m, personal_info p
+		WHERE m.mreceiver_id = p.empno 
+		and mowner_id = #{mownerId} 
+		ORDER BY date_format(msend_date, '%Y-%m-%d %h:%i:%s')desc;
+	</select>
+	
+	
+	<select id="getDetailMessageReceive" resultType="MessageVO">
+		SELECT m.id as id, mowner_id, p.name as ownerName, mcontent, date_format(msend_date, '%Y-%m-%d') as msend_date, mreceiver_id, view 
+		FROM message m INNER join personal_info p
+		WHERE m.mowner_id = p.empno
+		and m.id = #{id}
+	</select>
+	<select id="getDetailMessageSend" resultType="MessageVO">
+		SELECT m.id as id, mowner_id, mcontent, date_format(msend_date, '%Y-%m-%d') as msend_date, mreceiver_id, p.name as receiverName, view
+		FROM message m INNER join personal_info p
+		WHERE m.mreceiver_id = p.empno
+		and m.id = #{id}
+	</select>
+	
+	<insert id="insertSendMessage">
+		INSERT INTO message(mowner_id, mcontent, mreceiver_id)
+		values ( #{mownerId}, #{mcontent} ,#{mreceiverId})
+	</insert>
+
+	<delete id="deleteMessage">
+		delete from message
+		where id in
+		<foreach item="item" collection="array" open="(" separator=","
+			close=")">
+			#{item}
+		</foreach>
+	</delete>
+
+	<update id="viewMessage">
+		UPDATE message SET VIEW = 1
+		WHERE mreceiver_Id = #{empno} 
+		AND id= #{id}
+	</update>
+
+	<update id="updateEmail"> 
+		update personal_info set email_password = #{email_password}, email = #{email_id}
+		where empno = #{empno}
+	</update>
+<!-- 	<select id="selectList" resultType="MessageVO"> -->
+<!-- 		select id, mowner, mtitle, -->
+<!-- 		mcontent,date_format(create_date, '%Y-%m-%d %T') create_date, -->
+<!-- 		mreciever -->
+<!-- 		from message -->
+<!-- 	</select> -->
+
+<!-- 	<select id="selectBBS" resultType="MessageVO"> -->
+<!-- 		select id, mowner, mtitle, -->
+<!-- 		mcontent,date_format(create_date, '%Y-%m-%d %T') create_date, -->
+<!-- 		mreciever -->
+<!-- 		from message -->
+<!-- 		where id = #{id} -->
+<!-- 	</select> -->
+
+
+
+<!-- 	<insert id="insertData"> -->
+<!-- 		insert into message( mowner, mtitle, -->
+<!-- 		mcontent, mreciever) -->
+<!-- 		values ( #{mowner}, #{mtitle},#{mcontent}, -->
+<!-- 		#{mreciever}) -->
+<!-- 	</insert> -->
+
+
+<!-- 	<insert id="insertmessage"> -->
+<!-- 		insert into message -->
+<!-- 		( -->
+<!-- 		mowner, mtitle, mcontent, mreciever -->
+<!-- 		) -->
+<!-- 		values -->
+<!-- 		( -->
+<!-- 		#{mowner}, #{mtitle},#{mcontent}, #{mreciever} -->
+<!-- 		) -->
+<!-- 	</insert> -->
+
+
+<!-- 	<delete id="deleteData1"> -->
+<!-- 		delete from message -->
+<!-- 		where id in -->
+<!-- 		<foreach item="item" collection="ids" open="(" separator="," -->
+<!-- 			close=")"> -->
+<!-- 			#{item} -->
+<!-- 		</foreach> -->
+<!-- 	</delete> -->
+
+<!-- 	<delete id="deleteData2"> -->
+<!-- 		delete from message -->
+<!-- 		where id in -->
+<!-- 		<foreach item="item" collection="idss" open="(" separator="," -->
+<!-- 			close=")"> -->
+<!-- 			#{item} -->
+<!-- 		</foreach> -->
+<!-- 	</delete> -->
+
+
+
+</mapper>

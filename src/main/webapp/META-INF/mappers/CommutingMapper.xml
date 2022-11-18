@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.awoo.dao.CommutingDAO">
+	<select id="selectAllCommutingByID" resultType="CommutingVo">
+		select id, workday, DATE_FORMAT(start_time, '%H:%i') as start_time, DATE_FORMAT(end_time, '%H:%i') as end_time, work_time, over_time, empno
+		from commuting WHERE empno = 123; 
+	</select>
+
+
+	<select id="selectCommuting" parameterType="Map" resultType="CommutingVO">
+		select id, workday, DATE_FORMAT(start_time, '%H:%i') as start_time, DATE_FORMAT(end_time, '%H:%i') as end_time, work_time, over_time, empno
+		from commuting  
+		<where>
+			empno=#{empno}
+			
+			<if test="month == null">
+				and 1=1
+			</if>
+			<if test="year == null">
+				and 1=1
+			</if>
+			<if test="month != null">
+				and DATE_FORMAT(workday, '%m') = #{month}
+			</if>
+			<if test="year != null">
+				and DATE_FORMAT(workday, '%Y') = #{year}
+			</if>
+		</where>
+		order by workday desc;
+	</select>
+	<insert id="insertEnter" keyProperty="id">
+		INSERT INTO commuting(start_time, empno, over_time) 
+		VALUES (#{startTime}, #{empno}, #{overTime});
+	</insert>
+	<update id="insertLeave">
+		update commuting
+			set end_time = #{endTime},
+				work_time = #{workTime},
+				over_time = #{overTime}
+			WHERE empno=#{empno} AND DATE_FORMAT(workday, '%Y-%m-%d') = #{workday};
+	</update>
+	<select id="getStartTime" resultType="String">
+<!-- 		select DATE_FORMAT(start_time, '%H:%i:%s %p') -->
+
+<!-- 		select DATE_FORMAT(start_time, '%Y-%m-%d %H:%i:%s') -->
+		select DATE_FORMAT(start_time, '%H:%i')
+		from commuting WHERE DATE_FORMAT(workday, '%Y-%m-%d') = #{workday} AND empno=#{empno};
+	</select>
+		<select id="getEndTime" resultType="String">
+<!-- 		select DATE_FORMAT(start_time, '%H:%i:%s %p') -->
+<!-- 		select DATE_FORMAT(end_time, '%Y-%m-%d %H:%i:%s') -->
+		select DATE_FORMAT(end_time, '%H:%i')
+		from commuting WHERE DATE_FORMAT(workday, '%Y-%m-%d') = #{workday} AND empno=#{empno};
+	</select>
+	
+	<select id="getDistinctYear" resultType="String">
+		select distinct(DATE_FORMAT(workday, '%Y')) 
+		from commuting 
+		where empno=#{empno} 
+		order by (DATE_FORMAT(workday, '%Y')) desc
+	</select>
+	<select id="countThisMonth" resultType="int">
+		select count(workday) 
+		from commuting 
+		where DATE_FORMAT(workday, '%Y-%m') = #{workday}
+			and empno=#{empno};
+	</select>
+	<select id="countOverTime" resultType="int">
+		SELECT COUNT(over_time) FROM commuting
+		WHERE over_time != "-" and empno = #{empno} AND DATE_FORMAT(workday, '%Y-%m') = #{workday};
+	</select>
+	<select id="countLate" resultType="int">
+		SELECT COUNT(workday) FROM commuting
+		WHERE empno=#{empno} AND 
+		DATE_FORMAT(workday,'%Y-%m')=#{workday} AND
+		date_format(start_time,'%H:%i')>'09:10';
+	</select>
+	<select id="countNomalWorkday" resultType="int">
+		SELECT count(work_time)
+	  	FROM commuting WHERE empno = ${empno} and cast(SUBSTRING_INDEX(work_time, '시간', 1) AS UNSIGNED) >= 9 
+	  	and DATE_FORMAT(workday,'%Y-%m')=#{workday};
+	</select>
+	
+	<select id="getEmpInfo" resultType="EmployeeInfoVO">
+		select empno, eposition, edepartment, total_holiday, used_holiday, check_admin
+		from employee_info where empno=#{empno}
+	</select>
+	
+	
+	<!--=========================== 홈에 가져갈 애들========================== -->
+	
+	<select id="selectBBSListNoticeForHome" resultType="BBSVO">
+		select id, category, title, owner_id, owner, content, view_counts,
+		date_format(create_date, '%Y-%m-%d') create_date
+		from bbs_notice
+		where
+		is_delete = 0
+		order by id desc
+		limit 0, 5
+	</select>
+	<select id="selectBBSForHome" resultType="BBSVO">
+		select id, owner_id, owner, title, content, date_format(create_date, '%Y-%m-%d') create_date, category, is_delete, view_counts
+		from bbs
+		where
+		is_delete = 0
+		order by id desc
+		limit 0, 5;
+	</select>
+	
+	<select id="selectCountApprovalHoliday" resultType="int">
+		SELECT COUNT(approval) FROM holiday WHERE approval = '요청중' and empno = #{empno};
+	</select>
+	<select id="selectTotalUsedHoliday" resultType="EmployeeInfoVO">
+		SELECT total_holiday, used_holiday FROM employee_info WHERE empno=#{empno};
+	</select>
+	<select id="getTodayCalendar" resultType="CalendarVO">
+		SELECT cal_id, cal_title, cal_place, cal_start, date_format(cal_end, '%Y-%m-%d %h:%m') AS cal_end, cal_allday, cal_show, cal_recur, cal_content, c.empno as empno, check_admin, approval, p.name as ename 
+		FROM calendar c, personal_info p
+		WHERE c.empno = p.empno
+		AND #{today} between DATE_FORMAT(cal_start,'%Y-%m-%d') AND DATE_FORMAT(cal_end,'%Y-%m-%d');
+	</select>
+	<select id="getCountView" resultType="int">
+	SELECT COUNT(VIEW) FROM message WHERE mreceiver_id = #{empno} AND VIEW=0;
+	</select>
+</mapper>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.awoo.dao.BBSCommentDAO">
+	
+	<select id="selectCommentList" resultType="BBSCommentVO">
+		select b.id, b.bbs_id, b.owner_id, b.owner, b.comment, 
+		date_format(b.create_date, '%Y-%m-%d %T') create_date, e.eposition, e.edepartment 
+		from bbs_comment as b inner join employee_info as e
+		on b.owner_id = e.empno 
+		where is_delete = 0 and bbs_id = #{bbsId}
+	</select>
+	
+	
+	<insert id="insertComment" parameterType="BBSCommentVO" useGeneratedKeys="true" keyProperty="id">
+		insert into bbs_comment (bbs_id, owner_id, owner, comment)
+		values (#{bbsId}, #{ownerId}, #{owner}, #{comment});
+	</insert>
+	
+	<update id="updateComment">
+		update bbs_comment set comment = #{comment}
+		where id = #{id} and owner_id = #{ownerId}
+	</update>
+	
+	<update id="deleteComment">
+		update bbs_comment set is_delete = 1 
+		where id = #{id}
+	</update>
+
+	
+</mapper>
+

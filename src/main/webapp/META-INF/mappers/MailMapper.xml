@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.awoo.dao.MailDAO">
+	<select id="getmailList" resultType="MailVO">
+		SELECT m.id, m.empno, e.name AS name, m.send_to, DATE_FORMAT(m.send_date, '%Y-%m-%d %H:%i') as send_date, m.title, m.content, m.count_files, m.show_hide
+		from mail m, personal_info e
+		<where>
+			m.empno= e.empno AND (show_hide = 1 OR m.empno = #{empno})
+			<if test="month == null">
+				and 1=1
+			</if>
+			<if test="year == null">
+				and 1=1
+			</if>
+			<if test="name == null">
+				and 1=1
+			</if>
+			<if test="month != null">
+				and DATE_FORMAT(send_date, '%m') = #{month}
+			</if>
+			<if test="year != null">
+				and DATE_FORMAT(send_date, '%Y') = #{year}
+			</if>
+			<if test="name != null">
+				and e.name = #{name}
+			</if>
+		</where>
+			order by id desc;
+	</select>
+
+	<insert id="insertMail">
+		INSERT INTO Mail(empno, send_to, title, content, count_files, show_hide)
+		values (#{empno}, #{sendTo}, #{title}, #{content}, #{countFiles}, #{showHide})
+	</insert>
+
+	<select id="getMailDistinctYear" resultType="String">
+		select distinct(DATE_FORMAT(send_date, '%Y')) 
+		from mail m, personal_info e
+		where m.empno= e.empno AND (show_hide = 1 OR m.empno = #{empno})
+		order by (DATE_FORMAT(send_date, '%Y')) DESC;
+	</select>
+	<select id="getMailDistinctSender" resultType="String">
+		select distinct(e.name) 
+		from mail m, personal_info e
+		where m.empno= e.empno AND (show_hide = 1 OR m.empno = #{empno})
+	</select>
+	<select id="getDetailMail" resultType="MailVO">
+		SELECT m.id, m.empno, e.name AS name, m.send_to, m.send_date, m.title, m.content, m.count_files, m.show_hide
+		from mail m, personal_info e
+		where m.empno= e.empno AND m.id = #{id};
+	</select>
+	
+<!-- 	<select id="getRecieveDistinctSender" resultType="String"> -->
+<!-- 		SELECT distinct(p.name)  -->
+<!-- 		FROM message m, personal_info p -->
+<!-- 		WHERE m.mowner_id = p.empno  -->
+<!-- 		and mreceiver_id=#{mreceiverId} -->
+<!-- 		ORDER BY date_format(msend_date, '%Y-%m-%d %h:%i:%s')desc; -->
+<!-- 	</select> -->
+
+</mapper>

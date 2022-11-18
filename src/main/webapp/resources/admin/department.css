@@ -1,0 +1,63 @@
+.requirement {
+	color: red;
+}
+
+.inputText {
+	width: 70%;
+	border: 1px solid #d5d5d5;
+	font-size: 0.8rem;
+	line-height: 1.8rem;
+	padding-left: 2%;
+}
+
+.intro {
+	width: 100%;
+}
+
+.tbtn1 {
+	width: 100%;
+}
+
+.tbtn1>button {
+	width: 115px;
+}
+
+.abtn {
+	display: flex;
+	flex-direction: row;
+}
+
+.modal_wrap {
+	width: 420px;
+	height:300px;
+	padding: 2rem;
+}
+
+.mcontents {
+	padding-top:1rem;
+}
+
+.mcontents>p {
+	color: #808991;
+	pointer-events: auto;
+	letter-spacing: -0.03rem;
+	text-align: left;
+}
+
+.mcontents>h2 {
+	font-weight: 700;
+	line-height: 2.25rem;
+	color: #212529;
+	margin-block-start: 0.83em;
+	margin-block-end: 0.83em;
+	margin-inline-start: 0px;
+	margin-inline-end: 0px;
+	text-align: left;
+}
+
+.mcontents>input {
+	border: 0.1rem solid #afb7bc;
+	font-family: 'Nanum Barun Gothic', sans-serif;
+	line-height: 1.8rem;
+	width: 50%;
+}

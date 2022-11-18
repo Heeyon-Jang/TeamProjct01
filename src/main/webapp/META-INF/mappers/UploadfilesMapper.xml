@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.awoo.dao.UploadfilesDAO">
+	<!-- empno 식별 : 사원 이미지 -->
+	<select id="selectFile" resultType="UploadfilesVO">
+		select file_name,owner_id from admin_uploadfiles
+		where 1=1
+		<if test="ownerId != null and ownerId != ''">
+		 	AND owner_id = #{ownerId}
+		 </if>
+	</select>
+	<!-- 사원 이미지 업로드 -->
+	<insert id="uplaodFile">
+		insert into admin_uploadfiles(
+		owner_id,file_name
+		)
+		values(
+		#{ownerId},#{fileName}
+		)
+	</insert>
+	<!-- 사원 이미지 업데이트 -->
+	<update id="updateFile">
+		UPDATE admin_uploadfiles 
+		<set>
+			<if test="fileName != null and fileName != ''">
+				file_name = #{fileName},
+			</if>
+			upload_date = now()
+		</set>
+		where 1=1
+		<if test="ownerId != null and ownerId != ''">
+		 	AND owner_id = #{ownerId}
+		 </if>
+	</update>
+</mapper>

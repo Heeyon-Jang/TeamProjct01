@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.awoo.dao.PersonalInfoDAO">
+	<!-- 인사정보 : 신규직원 등록 -->
+	<insert id="insertDataP">
+		insert into personal_info(
+		empno,name,gender,birthday,password,email,tel_number,phone_number,address
+		)
+		values (
+		#{empno},#{name},#{gender},#{birthday},#{password},#{email},
+		#{telNumber},
+		#{phoneNumber},#{address}
+		) 
+	</insert>
+	<!-- 인사정보 : 상세보기 -->
+	<select id="selectInfo" resultType="InfoVO">
+		select id, NAME,gender,birthday,password,email,tel_number,phone_number,address, 
+		personal_info.empno, edepartment,eposition, date_format(ehired_date,'%Y-%m-%d') ehired_date,
+		ehired_type,total_holiday,estatus,check_admin
+		 from personal_info JOIN employee_info ON personal_info.empno = employee_info.empno where personal_info.id = #{id}
+	</select>
+	<!-- 전체 리스트 + 상세검색 -->
+	<select id="selectDetail" resultType="InfoVO">
+		SELECT id, NAME, personal_info.empno, edepartment,eposition, date_format(ehired_date,'%Y-%m-%d') ehired_date,ehired_type,total_holiday,estatus
+		 from personal_info JOIN employee_info ON personal_info.empno = employee_info.empno
+		 where 1=1
+		 <if test="edepartment != null and edepartment != ''">
+		 	AND edepartment = #{edepartment}
+		 </if>
+		 <if test="eposition != null and eposition != ''">
+		 	AND eposition = #{eposition}
+		 </if>
+		 <if test="ehiredType != null and ehiredType != ''">
+		 	AND ehired_type = #{ehiredType}
+		 </if>
+		 <if test="estatus != null and estatus != ''">
+		 	AND estatus = #{estatus}
+		 </if>
+		 <if test="name != null and name != ''">
+		 	and NAME like CONCAT('%',#{name},'%')
+		 </if>
+		 <if test="ehiredDate != null and ehiredDate != ''">
+		 	AND ehired_date BETWEEN #{ehiredDate} AND #{date}
+		 </if>
+	</select>
+	<!-- 인사정보 : 수정하기 -->
+	<update id="updateP">
+		update personal_info
+		<set>
+			<if test="empno != null and empno != ''">
+			empno = #{empno},  
+			</if>
+			<if test="name != null and name != ''">
+			name = #{name},  
+			</if>
+			<if test="gender != null and gender != ''">
+			gender = #{gender},  
+			</if>
+			<if test="birthday != null and birthday != ''">
+			birthday = #{birthday},  
+			</if>
+			<if test="password != null and password != ''">
+			password = #{password},  
+			</if>
+			<if test="telNumber != null and telNumber != ''">
+			tel_number = #{telNumber},  
+			</if>
+			<if test="email != null and email != ''">
+			email = #{email},  
+			</if>
+			<if test="phoneNumber != null and phoneNumber != ''">
+			phone_number = #{phoneNumber},  
+			</if>
+			<if test="address != null and address != ''">
+			address = #{address},  
+			</if>
+		</set>
+		where empno = #{empno}
+	</update>
+	
+		
+	<!-- 내 정보 : 수정하기 -->
+	<select id="selectPerPro" resultType="PersonalInfoVO">
+		select * from personal_info
+		where empno = #{empno}
+	</select>
+	<!-- 내 정보 : 비밀번호 확인 -->
+	<select id="passCheck" resultType="int">
+		select count(*) from personal_info
+		where 1=1
+		<if test="empno != null and empno != ''">
+			and empno = #{empno}
+		</if>
+		<if test="password != null and password != ''">
+			and password = #{password}
+		</if>
+	</select>
+</mapper>
